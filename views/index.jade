@@ -1,0 +1,18 @@
+extends layout
+
+append head
+  script(src='/javascripts/app.js')
+
+block content
+  div.btn-group(role='group')
+    button.btn.btn-default(type='button', onclick='draw.activate();') Draw
+    button.btn.btn-default(type='button', onclick='drag.activate();') Drag
+  input#drawColor(type='color', value='#000000')
+  form#uploadForm.form-inline(enctype='multipart/form-data', action='/api/photo', method='post')
+    div.form-group
+      input.btn.btn-default(type='file', name='userPhoto')
+    input.btn.btn-primary(type='submit', value='Upload Image', name='submit')
+  div#message
+  canvas#mainCanvas(resize)
+  img#marth(src='images/marth.png', style='display:none;')
+  img#chicago(src='images/chicago.gif', style='display:none;')
