@@ -4,6 +4,7 @@ paper.install(window);
 
 var draw, drag;
 var path;
+var itemCount = 0;
 
 var hitOptions = {
   segments: true,
@@ -12,24 +13,72 @@ var hitOptions = {
   tolerance: 5
 };
 
+function insertSprite() {
+  var $row = $('#images').find('input:checked').parents('tr');
+  var filename = $row.find('div').html();
+
+  $('body').append(
+    $('<img>').attr({
+      'src': 'uploads/' + filename,
+      'id': filename + itemCount,
+      'style': 'display: none'
+    })
+  );
+
+  var sprite = new Raster(filename + itemCount);
+  sprite.position = view.center;
+
+  itemCount++;
+
+  $('#spriteModal').modal('hide');
+}
+
 socket.on('files', function(data) {
-  console.log(data);
+  $('#images').html('');
+
+  $.each(data, function(i, file) {
+    $('#images').append(
+      $('<tr>').append(
+        $('<td>').append($('<img>').attr('src', 'uploads/' + file).attr('class', 'preview'))
+      ).append(
+        $('<td>').append($('<div>').html(file))
+      ).append(
+        $('<td>').append($('<input>').attr({'type': 'checkbox', 'id': 'checkbox' + i}))
+      )
+    );
+  });
+
+  var $inputs = $('#images').find('input');
+  $inputs.on('click', function(e) {
+    var id = $(e.target).attr('id');
+
+    $inputs.map(function(i, obj) {
+      var $obj = $(obj);
+
+      if (id != $obj.attr('id')) {
+        $obj.removeAttr('checked');
+      }
+    });
+  });
 });
 
 $(function() {
-  $('#uploadForm').on('submit', function(e) {
-    e.preventDefault();
-    $.ajax({
-      url: $(this).attr('action'),
-      type: 'POST',
-      data: $(this).serialize(),
-      beforeSend: function() {
-        $('#message').html('Sending File...');
+  $('#uploadForm').submit(function(e) {
+    $(this).ajaxSubmit({
+      error: function(xhr) {
+        $('#message').html('Error: ' + xhr.status);
       },
-      success: function(data) {
-        $('#message').html(data);
+      success: function(response) {
+        $('#message').html(response);
+        socket.emit('ls');
       }
     });
+
+    return false;
+  });
+
+  $('#spriteModal').on('shown.bs.modal', function() {
+    socket.emit('ls');
   });
 });
 
@@ -69,19 +118,13 @@ $(function() {
 
     if (!hitResult) {
       return;
-    } else if (event.modifiers.shift) {
-      hitResult.item.remove();
-      return;
-    }
-
-    path = hitResult.item;
-
-    if (path == chicago) {
+    } else if ((path = hitResult.item) == chicago) {
       path = null;
-      return;
+    } else if (event.modifiers.shift) {
+      path.remove();
+    } else {
+      project.activeLayer.addChild(path);
     }
-
-    project.activeLayer.addChild(hitResult.item);
   }
 
   drag.onMouseMove = function(event) {
@@ -93,6 +136,8 @@ $(function() {
   }
 
   drag.onMouseDrag = function(event) {
-    path.position = path.position.add(event.delta);
+    if (path) {
+      path.position = path.position.add(event.delta);
+    }
   }
 });

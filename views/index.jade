@@ -1,18 +1,43 @@
 extends layout
 
 append head
+  script(src='/jquery.form/jquery.form.js')
   script(src='/javascripts/app.js')
 
 block content
-  div.btn-group(role='group')
+  .btn-group(role='group')
     button.btn.btn-default(type='button', onclick='draw.activate();') Draw
     button.btn.btn-default(type='button', onclick='drag.activate();') Drag
-  input#drawColor(type='color', value='#000000')
-  form#uploadForm.form-inline(enctype='multipart/form-data', action='/api/photo', method='post')
-    div.form-group
-      input.btn.btn-default(type='file', name='userPhoto')
-    input.btn.btn-primary(type='submit', value='Upload Image', name='submit')
-  div#message
+    button.btn.btn-default(type='button', data-toggle='modal', data-target='#spriteModal') Sprite
+  input#drawColor(type='color', value='#000000', style='float: right')
   canvas#mainCanvas(resize)
   img#marth(src='images/marth.png', style='display:none;')
   img#chicago(src='images/chicago.gif', style='display:none;')
+  
+  #spriteModal.modal.fade(tabindex='-1', role='dialog')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') ×
+          h4.modal-title Sprite Manager
+        .modal-body(style="padding: 20px;")
+          .row(style="margin-bottom: 5px;")
+            form#uploadForm.form-inline(enctype='multipart/form-data', action='/uploadImage', method='post')
+              .form-group
+                input.btn.btn-default(type='file', name='image')
+              input.btn.btn-primary(type='submit', value='Upload Image', name='submit')
+            #message
+          .row(style="margin-bottom: 5px;")
+            button.btn.btn-default(type='button', style='width: 100%', onclick="socket.emit('ls')") Refresh
+          .row
+            table.table.table-hover
+              thead
+                tr
+                  th Preview
+                  th Name
+                  th Select
+              tbody#images
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Close
+          button.btn.btn-primary(type='button', onclick='insertSprite()') Insert Sprite
