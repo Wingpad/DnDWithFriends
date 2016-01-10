@@ -6,13 +6,11 @@ append head
 
 block content
   .btn-group(role='group')
-    button.btn.btn-default(type='button', onclick='draw.activate();') Draw
-    button.btn.btn-default(type='button', onclick='drag.activate();') Drag
+    button.btn.btn-default(type='button', onclick='setDrawingMode(true)') Draw
+    button.btn.btn-default(type='button', onclick='setDrawingMode(false)') Drag
     button.btn.btn-default(type='button', data-toggle='modal', data-target='#spriteModal') Sprite
   input#drawColor(type='color', value='#000000', style='float: right')
   canvas#mainCanvas(resize)
-  img#marth(src='images/marth.png', style='display:none;')
-  img#chicago(src='images/chicago.gif', style='display:none;')
   
   #spriteModal.modal.fade(tabindex='-1', role='dialog')
     .modal-dialog
@@ -38,6 +36,11 @@ block content
                   th Name
                   th Select
               tbody#images
+          .row
+            .checkbox
+              label
+                input#background(type='checkbox')
+                |  Set as background
         .modal-footer
           button.btn.btn-default(type='button', data-dismiss='modal') Close
           button.btn.btn-primary(type='button', onclick='insertSprite()') Insert Sprite

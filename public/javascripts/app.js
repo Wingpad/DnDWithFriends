@@ -1,10 +1,10 @@
-var socket = io.connect();
-
-paper.install(window);
+var socket    = io.connect();
+var itemCount = 0;
+var background;
+var canvas;
 
 var draw, drag;
 var path;
-var itemCount = 0;
 
 var hitOptions = {
   segments: true,
@@ -13,20 +13,68 @@ var hitOptions = {
   tolerance: 5
 };
 
+function fitToCanvas(obj) {
+  var factor = Math.min(canvas.getWidth()/obj.getWidth(), canvas.getHeight()/obj.getHeight());
+
+  if (factor < 1) {
+    obj.centeredScaling = true;
+    obj.setScaleX(factor);
+    obj.setScaleY(factor);
+  }
+
+  obj.center();
+  obj.setCoords();
+
+  canvas.renderAll();
+}
+
+function updateBackground(obj) {
+  if (obj) {
+    if (background) {
+      background.remove();
+    }
+
+    background = obj;
+  } else if (background) {
+    obj = background;
+  } else {
+    return;
+  }
+
+  obj.selectable = false;
+
+  obj.setHeight(window.innerHeight);
+  obj.setWidth(window.innerWidth);
+  obj.center();
+  obj.sendToBack();
+
+  canvas.renderAll();
+}
+
+function resizeCanvas() {
+  canvas.setHeight(window.innerHeight);
+  canvas.setWidth(window.innerWidth);
+  canvas.renderAll();
+  updateBackground();
+}
+
+function setDrawingMode(enabled) {
+  canvas.isDrawingMode = enabled;
+}
+
 function insertSprite() {
   var $row = $('#images').find('input:checked').parents('tr');
   var filename = $row.find('div').html();
 
-  $('body').append(
-    $('<img>').attr({
-      'src': 'uploads/' + filename,
-      'id': filename + itemCount,
-      'style': 'display: none'
-    })
-  );
+  fabric.Image.fromURL('uploads/' + filename, function(oImg) {
+    canvas.add(oImg);
 
-  var sprite = new Raster(filename + itemCount);
-  sprite.position = view.center;
+    if($('#background').is(':checked')) {
+      updateBackground(oImg);
+    } else {
+      fitToCanvas(oImg);
+    }
+  });
 
   itemCount++;
 
@@ -63,6 +111,12 @@ socket.on('files', function(data) {
 });
 
 $(function() {
+  canvas = new fabric.Canvas('mainCanvas');
+  window.addEventListener('resize', resizeCanvas, false);
+
+  // resize on init
+  resizeCanvas();
+
   $('#uploadForm').submit(function(e) {
     $(this).ajaxSubmit({
       error: function(xhr) {
@@ -80,64 +134,19 @@ $(function() {
   $('#spriteModal').on('shown.bs.modal', function() {
     socket.emit('ls');
   });
-});
 
-$(function() {
-  paper.setup('mainCanvas');
+  $('#drawColor').change(function() {
+    canvas.freeDrawingBrush.color = this.value;
+  });
 
-  var chicago = new Raster('chicago');
-  chicago.fitBounds(view.bounds);
-  chicago.position = view.center;
-
-  var marth = new Raster('marth');
-  marth.position = view.center;
-
-  draw = new Tool();
-
-  draw.onMouseDown = function(event) {
-    var color = $('#drawColor').val();
-
-    path = new Path({
-      segments: [event.point],
-      strokeColor: color
-    });
-  }
-
-  draw.onMouseDrag = function(event) {
-    path.add(event.point);
-  }
-
-  draw.onMouseUp = function(event) {
-    path.simplify(10);
-  }
-
-  drag = new Tool();
-
-  drag.onMouseDown = function(event) {
-    var hitResult = project.hitTest(event.point, hitOptions);
-
-    if (!hitResult) {
-      return;
-    } else if ((path = hitResult.item) == chicago) {
-      path = null;
-    } else if (event.modifiers.shift) {
-      path.remove();
-    } else {
-      project.activeLayer.addChild(path);
+  $('html').keyup(function(e) {
+    if (e.keyCode == 46 || e.keyCode == 8) {
+      if(canvas.getActiveGroup()) {
+        canvas.getActiveGroup().forEachObject(function(o){ canvas.remove(o) });
+        canvas.discardActiveGroup().renderAll();
+      } else {
+        canvas.remove(canvas.getActiveObject());
+      }
     }
-  }
-
-  drag.onMouseMove = function(event) {
-    project.activeLayer.selected = false;
-
-    if (event.item) {
-      event.item.selected = true;
-    }
-  }
-
-  drag.onMouseDrag = function(event) {
-    if (path) {
-      path.position = path.position.add(event.delta);
-    }
-  }
+  });
 });

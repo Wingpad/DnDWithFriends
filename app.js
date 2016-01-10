@@ -33,7 +33,7 @@ app.use('/', routes);
 app.use('/users', users);
 
 // scripts
-app.use('/paper', express.static(__dirname + '/bower_components/paper/dist'));
+app.use('/fabric', express.static(__dirname + '/bower_components/fabric.js/dist'));
 app.use('/jquery', express.static(__dirname + '/bower_components/jquery/dist'));
 app.use('/jquery.form', express.static(__dirname + '/bower_components/jquery-form'));
 app.use('/bootstrap', express.static(__dirname + '/bower_components/bootstrap/dist'));
