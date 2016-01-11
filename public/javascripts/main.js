@@ -1,4 +1,3 @@
-var socket    = io.connect();
 var itemCount = 0;
 var background;
 var canvas;
@@ -13,6 +12,11 @@ var hitOptions = {
   tolerance: 5
 };
 
+function clearAll() {
+  background = null;
+  canvas.clear().renderAll();
+}
+
 function fitToCanvas(obj) {
   var factor = Math.min(canvas.getWidth()/obj.getWidth(), canvas.getHeight()/obj.getHeight());
 
@@ -22,7 +26,7 @@ function fitToCanvas(obj) {
     obj.setScaleY(factor);
   }
 
-  obj.center();
+//  obj.center();
   obj.setCoords();
 
   canvas.renderAll();
@@ -67,9 +71,15 @@ function insertSprite() {
   var filename = $row.find('div').html();
 
   fabric.Image.fromURL('uploads/' + filename, function(oImg) {
+    var background = $('#background').is(':checked');
+
+    if (background) {
+      oImg.set('background', true);
+    }
+
     canvas.add(oImg);
 
-    if($('#background').is(':checked')) {
+    if(background) {
       updateBackground(oImg);
     } else {
       fitToCanvas(oImg);
@@ -114,6 +124,10 @@ $(function() {
   canvas = new fabric.Canvas('mainCanvas');
   window.addEventListener('resize', resizeCanvas, false);
 
+  canvas.on('object:added', onObjectAdded);
+  canvas.on('object:removed', onObjectRemoved);
+  canvas.on('object:modified', onObjectModified);
+
   // resize on init
   resizeCanvas();
 
@@ -139,6 +153,8 @@ $(function() {
     canvas.freeDrawingBrush.color = this.value;
   });
 
+  $('#draggable').draggable();
+
   $('html').keyup(function(e) {
     if (e.keyCode == 46 || e.keyCode == 8) {
       if(canvas.getActiveGroup()) {
@@ -148,5 +164,9 @@ $(function() {
         canvas.remove(canvas.getActiveObject());
       }
     }
+  });
+
+  $('#clear').on('click', function(e) {
+    socket.emit('clear');
   });
 });

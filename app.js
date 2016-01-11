@@ -36,7 +36,9 @@ app.use('/users', users);
 app.use('/fabric', express.static(__dirname + '/bower_components/fabric.js/dist'));
 app.use('/jquery', express.static(__dirname + '/bower_components/jquery/dist'));
 app.use('/jquery.form', express.static(__dirname + '/bower_components/jquery-form'));
+app.use('/jquery.ui', express.static(__dirname + '/bower_components/jquery-ui'));
 app.use('/bootstrap', express.static(__dirname + '/bower_components/bootstrap/dist'));
+app.use('/node-uuid', express.static(__dirname + '/node_modules/node-uuid'));
 
 // images
 app.use('/uploads', express.static(__dirname + '/uploads'));
@@ -104,6 +106,22 @@ io.on('connection', function(socket) {
 
       socket.emit('files', files);
     });
+  });
+
+  socket.on('clear', function() {
+    io.emit('clear');
+  });
+
+  socket.on('added', function(obj) {
+    socket.broadcast.emit('added', obj);
+  });
+
+  socket.on('removed', function(obj) {
+    socket.broadcast.emit('removed', obj);
+  });
+
+  socket.on('modified', function(obj) {
+    socket.broadcast.emit('modified', obj);
   });
 });
 
