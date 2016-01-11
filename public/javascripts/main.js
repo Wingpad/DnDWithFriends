@@ -12,6 +12,16 @@ var hitOptions = {
   tolerance: 5
 };
 
+function streamYoutube(emit, id) {
+  var videoId = id || $('#videoId').val();
+  var $player = $('#player');
+  $player.attr('src', 'stream/' + videoId);
+  $player.trigger('play');
+  if (emit) {
+    socket.emit('play', videoId);
+  }
+}
+
 function clearAll() {
   background = null;
   canvas.clear().renderAll();

@@ -7,24 +7,25 @@ append head
   script(src='/javascripts/main.js')
 
 block content
+  audio#player(style='display: hidden;', loop)
   canvas#mainCanvas
   .ui-widget-content#draggable
     .row
       .btn-group(role='group')
         button.btn.btn-default(type='button', onclick='setDrawingMode(true)')
-          span.glyphicon.glyphicon-pencil
-        button.btn.btn-default(type='button', onclick='setDrawingMode(false)')
-          span.glyphicon.glyphicon-move
+          span.fa.fa-pencil
+        button.btn.btn-default(type='button', data-toggle='modal', data-target='#fontModal')
+          span.fa.fa-font
         button.btn.btn-default(type='button', data-toggle='modal', data-target='#spriteModal')
-          span.glyphicon.glyphicon-picture
+          span.fa.fa-file-image-o
     .row
       .btn-group(role='group')
+        button.btn.btn-default(type='button', onclick='setDrawingMode(false)')
+          span.fa.fa-arrows
         button#clear.btn.btn-default(type='button')
-          span.glyphicon.glyphicon-trash
-        button.btn.btn-default(type='button', onclick='alert("music unsupported currently.")')
-          span.glyphicon.glyphicon-music
-        button.btn.btn-default(type='button', onclick='alert("settings unavailable.")')
-          span.glyphicon.glyphicon-cog
+          span.fa.fa-trash
+        button.btn.btn-default(type='button', data-toggle='modal', data-target='#musicModal')
+          span.fa.fa-music
     .row
       input#drawColor(type='color', value='#000000')
   #spriteModal.modal.fade(tabindex='-1', role='dialog')
@@ -59,3 +60,19 @@ block content
         .modal-footer
           button.btn.btn-default(type='button', data-dismiss='modal') Close
           button.btn.btn-primary(type='button', onclick='insertSprite()') Insert Sprite
+  #musicModal.modal.fade(tabindex='-1', role='dialog')
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') ×
+          h4.modal-title Music Manager
+        .modal-body
+          .row
+            label(for='videoId') Youtube URL
+              .input-group
+                span#vanityURL.input-group-addon https://www.youtube.com/watch?v=
+                input#videoId.form-control(type='text', aria-describedby='vanityURL')
+        .modal-footer
+          button.btn.btn-default(type='button', data-dismiss='modal') Close
+          button.btn.btn-primary(type='button', data-dismiss='modal', onclick='streamYoutube(true)') Play

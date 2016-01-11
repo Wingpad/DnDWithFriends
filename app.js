@@ -3,10 +3,11 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+var youtubeStream = require('youtube-audio-stream');
 var bodyParser = require('body-parser');
 var socket_io = require('socket.io');
 var multer  = require('multer');
-var fs = require("fs");
+var fs = require('fs');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -39,9 +40,21 @@ app.use('/jquery.form', express.static(__dirname + '/bower_components/jquery-for
 app.use('/jquery.ui', express.static(__dirname + '/bower_components/jquery-ui'));
 app.use('/bootstrap', express.static(__dirname + '/bower_components/bootstrap/dist'));
 app.use('/node-uuid', express.static(__dirname + '/node_modules/node-uuid'));
+app.use('/font-awesome', express.static(__dirname + '/bower_components/font-awesome'));
 
 // images
 app.use('/uploads', express.static(__dirname + '/uploads'));
+
+// Youtube Streaming
+app.use('/stream/:v', function(req, res) {
+  console.log(req.params);
+  var requestUrl = 'http://youtube.com/watch?v=' + req.params.v;
+  try {
+    youtubeStream(requestUrl).pipe(res);
+  } catch (exception) {
+    res.status(500).send(exception);
+  }
+});
 
 // multer stuff
 var storage = multer.diskStorage({
@@ -122,6 +135,10 @@ io.on('connection', function(socket) {
 
   socket.on('modified', function(obj) {
     socket.broadcast.emit('modified', obj);
+  });
+
+  socket.on('play', function(id) {
+    socket.broadcast.emit('play', id);
   });
 });
 

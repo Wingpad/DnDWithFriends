@@ -88,3 +88,6 @@ socket.on('modified', function(json) {
   removeId(obj.id);
   enliven(obj);
 });
+socket.on('play', function(id) {
+  streamYoutube(false, id);
+});
