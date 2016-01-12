@@ -165,8 +165,12 @@ $(function() {
 
   $('#draggable').draggable();
 
-  $('html').keyup(function(e) {
+  $(document).keyup(function(e) {
     if (e.keyCode == 46 || e.keyCode == 8) {
+      if (e.which === 8 && !$(e.target).is("input, textarea")) {
+        e.preventDefault();
+      }
+
       if(canvas.getActiveGroup()) {
         canvas.getActiveGroup().forEachObject(function(o){ canvas.remove(o) });
         canvas.discardActiveGroup().renderAll();
@@ -174,6 +178,8 @@ $(function() {
         canvas.remove(canvas.getActiveObject());
       }
     }
+
+    return false;
   });
 
   $('#clear').on('click', function(e) {
