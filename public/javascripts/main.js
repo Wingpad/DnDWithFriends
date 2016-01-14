@@ -5,12 +5,52 @@ var canvas;
 var draw, drag;
 var path;
 
+var apiKey  = "AIzaSyCnBmtX3ge59KIbmgQVse-hnS4uPMQNQmE";
+var baseUrl = "https://www.googleapis.com/youtube/v3/videos";
+
 var hitOptions = {
   segments: true,
   stroke: true,
   fill: true,
   tolerance: 5
 };
+
+var playlist = [];
+
+function getVideoInformation(song) {
+  $.ajax({
+    dataType: "json",
+    url: baseUrl,
+    data: {
+      id: song.id,
+      key: apiKey,
+      part: "snippet",
+      fields: "items(snippet)"
+    },
+    success: function (videoInfo) {
+      videoInfo = videoInfo.items[0].snippet;
+
+      song.title = videoInfo.title;
+      song.thumbnail = videoInfo.thumbnails.default.url;
+
+      $('#music').append(
+        $('<tr>').append(
+          $('<td>').append(
+            $('<img>').attr('src', song.thumbnail)
+          )
+        ).append(
+          $('<td>').html(
+            song.title
+          )
+        ).append(
+          $('<td>')
+        ).append(
+          $('<td>')
+        )
+      );
+    }
+  });
+}
 
 function streamYoutube(emit, id) {
   var videoId = id || $('#videoId').val();
@@ -102,7 +142,7 @@ function insertSprite() {
 }
 
 socket.on('files', function(data) {
-  $('#images').html('');
+  $('#images').empty();
 
   $.each(data, function(i, file) {
     $('#images').append(
@@ -184,5 +224,18 @@ $(function() {
 
   $('#clear').on('click', function(e) {
     socket.emit('clear');
+  });
+
+  $('#addBtn').on('click', function(e) {
+    var id = $('#videoId').val();
+
+    if (id) {
+      playlist.push({id: id});
+      $('#music').empty();
+
+      $.each(playlist, function(i, song) {
+        getVideoInformation(song);
+      });
+    }
   });
 });

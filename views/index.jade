@@ -73,6 +73,18 @@ block content
               .input-group
                 span#vanityURL.input-group-addon https://www.youtube.com/watch?v=
                 input#videoId.form-control(type='text', aria-describedby='vanityURL')
+                span.input-group-btn
+                  button#addBtn.btn.btn-default(type='button')
+                    span.fa.fa-plus
+          .row
+            table.table.table-hover
+              thead
+                tr
+                  th Preview
+                  th Title
+                  th Reorder
+                  th Delete
+              tbody#music
         .modal-footer
           button.btn.btn-default(type='button', data-dismiss='modal') Close
           button.btn.btn-primary(type='button', data-dismiss='modal', onclick='streamYoutube(true)') Play
